@@ -1,21 +1,16 @@
 #include <QApplication>
 #include <QDebug>
 #include <QObject>
-#include <QThread>
-#include "MyThread.h"
-#include "MyThread2.h"
+#include "SleepThread.h"
 
 int main(int argv, char** args) {
   QApplication app(argv, args);
 
-  MyThread* thread1 = new MyThread();
-  MyThread2* thread2 = new MyThread2();
-  thread1->m_thread2 = thread2;
-  thread2->m_thread1 = thread1;
-  QObject::connect(thread1, &MyThread::finished, &app, &QApplication::quit);
-  thread1->start();
-  thread2->start();
+  SleepThread* thread1 = new SleepThread();
+  QObject::connect(thread1, &QThread::finished, &app, &QApplication::quit);
   thread1->moveToThread(thread1);
-  thread2->moveToThread(thread2);
-  return app.exec();
+  thread1->start();
+  QMetaObject::invokeMethod(thread1, "sleep", Q_ARG(unsigned long, 3000));
+  QMetaObject::invokeMethod(thread1, "sleep", Q_ARG(unsigned long, 5000));
+  app.exec();
 }
